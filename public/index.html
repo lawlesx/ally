@@ -92,9 +92,15 @@
     max-width: 32ch;
     color: var(--muted);
   }
-  #lock { display: flex; gap: 8px; margin-top: -24px; }
-  #lock[hidden] { display: none; }
-  #lock input, #lock button {
+  /* One fixed-height row under the label, so nothing jumps when a call starts. */
+  #controls { display: grid; place-items: center; min-height: 44px; margin-top: -24px; }
+  #lock { display: flex; gap: 8px; }
+  #lock[hidden], #mute[hidden] { display: none; }
+  #mute[aria-pressed="true"] { background: rgb(255 255 255 / 0.2); border-color: rgb(255 255 255 / 0.4); }
+  body[data-muted] #orb { filter: saturate(0.35) brightness(0.75); }
+  #mute:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  #mute { cursor: pointer; }
+  #mute, #lock input, #lock button {
     font: inherit;
     color: var(--text);
     border-radius: 999px;
@@ -117,10 +123,13 @@
     <h1>Ally</h1>
     <button id="orb" type="button"></button>
     <p id="label" role="status" aria-live="polite"></p>
-    <form id="lock" hidden>
-      <input id="passcode" type="password" aria-label="Passcode" autocomplete="current-password" autocapitalize="off" spellcheck="false">
-      <button type="submit">Unlock</button>
-    </form>
+    <div id="controls">
+      <button id="mute" type="button" aria-pressed="false" hidden>Pause mic</button>
+      <form id="lock" hidden>
+        <input id="passcode" type="password" aria-label="Passcode" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+        <button type="submit">Unlock</button>
+      </form>
+    </div>
   </main>
   <script type="module" src="/app.js"></script>
 </body>

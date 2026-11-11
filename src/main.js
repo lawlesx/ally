@@ -4,7 +4,9 @@ const orb = document.getElementById('orb');
 const label = document.getElementById('label');
 const lock = document.getElementById('lock');
 const lockInput = document.getElementById('passcode');
+const muteButton = document.getElementById('mute');
 
+let muted = false;
 let conversation = null;
 let state = 'idle'; // idle | connecting | listening | speaking
 let level = 0;
@@ -60,11 +62,34 @@ lock.addEventListener('submit', (e) => {
 function setState(next, text) {
   state = next;
   document.body.dataset.state = next;
+  const inCall = next === 'listening' || next === 'speaking';
+  if (!inCall) setMuted(false);
+  muteButton.hidden = !inCall;
   label.textContent =
     text ??
-    { idle: 'Tap to talk to Ally', connecting: 'Connecting…', listening: '', speaking: '' }[next];
+    (inCall && muted
+      ? 'Mic paused. Ally can’t hear you.'
+      : { idle: 'Tap to talk to Ally', connecting: 'Connecting…', listening: '', speaking: '' }[next]);
   orb.setAttribute('aria-label', next === 'idle' ? 'Start talking to Ally' : 'End the conversation');
 }
+
+// Pausing the mic only stops sending your voice; the call and Ally carry on.
+function setMuted(on) {
+  muted = on;
+  try {
+    conversation?.setMicMuted(on);
+  } catch (err) {
+    console.error(err);
+  }
+  muteButton.setAttribute('aria-pressed', String(on));
+  muteButton.textContent = on ? 'Resume mic' : 'Pause mic';
+  document.body.toggleAttribute('data-muted', on);
+}
+muteButton.addEventListener('click', () => {
+  if (!conversation) return;
+  setMuted(!muted);
+  setState(state);
+});
 
 // Keep the phone screen on during a call; a locked screen cuts the microphone.
 let wakeLock = null;
