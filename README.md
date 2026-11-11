@@ -13,6 +13,7 @@ A real-time voice companion that feels like talking to a person. Tap the orb, sp
    ├─ hands the page a short-lived session token (API keys never reach the browser)
    ├─ memory:    after each call, Claude folds the transcript into memory.md
    ├─ greetings: Claude writes her next opening lines from that memory
+   ├─ archive:   every call also gets a diary entry she can search (her recall tool)
    └─ look-ups:  Claude searches the web when Ally uses her look_up tool
 ```
 
@@ -68,6 +69,7 @@ Open http://localhost:5173, tap the orb, allow the microphone, and talk. Tap aga
 |---|---|---|
 | Who she is, how she talks, her tastes | [persona.md](persona.md) | `bun run setup` |
 | Voice, voice stability, turn-taking, which Claude model she talks with | [scripts/setup-agent.mjs](scripts/setup-agent.mjs), or `ALLY_VOICE_ID` / `ALLY_LLM` / `ALLY_TTS_MODEL` in `.env` | `bun run setup` |
+| Names and words her hearing should expect | `keywords.txt`, one per line | `bun run setup` |
 | What she remembers | `memory.md` (just edit it) | nothing |
 | How memories and greetings are written | the instructions at the top of [memory.mjs](memory.mjs) | restart |
 | How look-ups are answered | [lookup.mjs](lookup.mjs) | restart |
@@ -79,11 +81,14 @@ Open http://localhost:5173, tap the orb, allow the microphone, and talk. Tap aga
 |---|---|
 | `server.mjs` | Serves the page; session tokens, the passcode lock, and the memory and look-up endpoints |
 | `memory.mjs` | Long-term memory and greetings |
+| `archive.mjs` | The diary of every call, and searching it |
 | `lookup.mjs` | Web look-ups |
 | `scripts/setup-agent.mjs` | Ally's configuration on ElevenLabs |
 | `persona.md` | Her system prompt |
 | `src/main.js`, `public/` | The page: the orb, the call, phone install files |
 | `memory.md` | What she remembers about you (not in git) |
+| `archive.json` | A diary entry for every call (not in git) |
+| `keywords.txt` | Words her speech recognition should expect (not in git) |
 | `.ally/` | Local state: agent and tool IDs, which calls are remembered, queued greetings (not in git) |
 | `PLAN.md` | The original design notes and research |
 
@@ -93,6 +98,12 @@ Open http://localhost:5173, tap the orb, allow the microphone, and talk. Tap aga
 - A new call waits (up to 45 seconds) until the previous call has been remembered, so she never starts with stale notes. Normally this is instant.
 - If you close the tab mid-call, the call is picked up the next time you start one.
 - The file is capped at roughly 500 words. Edit or delete anything in it; she is told to respect your edits.
+- Older details fall out of that file, so every call also gets a longer diary entry in `archive.json`, kept for good. When you mention something she no longer has in her notes, she searches the diary with her `recall` tool. Calls from before the archive existed are added the first time the server starts.
+
+## Languages and silence
+
+- She speaks English by default and switches to Hinglish when you speak Hindi, then back when you do. The language rules are in the "Languages" section of [persona.md](persona.md); the switch itself is ElevenLabs' language detection, set up in [scripts/setup-agent.mjs](scripts/setup-agent.mjs).
+- If the line is silent for 12 seconds she brings something up herself. If you stay quiet she says she'll wait, and then does. Say "hold on" and she waits straight away.
 
 ## Using her from your phone
 
@@ -113,5 +124,5 @@ A hosted copy keeps its own `memory.md`. On first start it rebuilds her memory f
 
 ## Privacy and cost
 
-- `.env`, `memory.md` and `.ally/` are ignored by git. Call audio and transcripts are stored by ElevenLabs.
-- ElevenLabs bills per minute of conversation. Anthropic is billed for one request per call (memory), one per greeting set, and one per look-up.
+- `.env`, `memory.md`, `archive.json`, `keywords.txt` and `.ally/` are ignored by git. Call audio and transcripts are stored by ElevenLabs.
+- ElevenLabs bills per minute of conversation. Anthropic is billed for two requests per call (memory and the diary entry), one per greeting set, and one per look-up or recall.

@@ -13,6 +13,7 @@ import {
   takeGreeting,
 } from './memory.mjs';
 import { lookUp } from './lookup.mjs';
+import { archiveMissing, recall } from './archive.mjs';
 
 const root = join(import.meta.dirname, 'public');
 const port = Number(process.env.PORT) || 5173;
@@ -117,6 +118,19 @@ createServer(async (req, res) => {
       console.log(`Looked up "${question}" in ${((Date.now() - started) / 1000).toFixed(1)}s`);
       return json(res, 200, { answer });
     }
+    if (path === '/api/recall' && req.method === 'POST') {
+      let body = '';
+      for await (const chunk of req) {
+        body += chunk;
+        if (body.length > 2000) return json(res, 413, { error: 'Question too long.' });
+      }
+      const question = body.trim();
+      if (!question) return json(res, 400, { error: 'No question.' });
+      const started = Date.now();
+      const answer = await recall(question);
+      console.log(`Recalled "${question}" in ${((Date.now() - started) / 1000).toFixed(1)}s`);
+      return json(res, 200, { answer });
+    }
     if (path === '/api/remember' && req.method === 'POST') {
       let body = '';
       for await (const chunk of req) {
@@ -124,7 +138,9 @@ createServer(async (req, res) => {
         if (body.length > 200) break;
       }
       const id = /^conv_[a-z0-9]+$/.test(body) ? body : null;
-      rememberCall(id); // runs in the background
+      // Runs in the background: short memory first (the next call waits on
+      // it), then the diary entry for the archive.
+      rememberCall(id).then(archiveMissing);
       res.writeHead(202);
       return res.end();
     }
@@ -151,4 +167,5 @@ createServer(async (req, res) => {
 }).listen(port, host, () => {
   console.log(`Ally is at http://localhost:${port}${passcode ? ' (passcode required)' : ''}`);
   refreshGreetings(); // have openers ready before the first call
+  archiveMissing(); // diary entries for any calls that don't have one yet
 });

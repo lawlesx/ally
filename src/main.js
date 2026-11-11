@@ -138,6 +138,16 @@ async function start() {
             return "Looking things up isn't working right now.";
           }
         },
+        // Ally's recall tool: the server searches her notes on every earlier call.
+        recall: async ({ question }) => {
+          try {
+            const r = await api('/api/recall', { method: 'POST', body: String(question ?? '') });
+            const d = await r.json();
+            return d.answer || d.error || 'Nothing about that in earlier calls.';
+          } catch {
+            return "It's not coming back to me right now.";
+          }
+        },
       },
       dynamicVariables: {
         memory: data.memory,

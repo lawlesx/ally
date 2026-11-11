@@ -79,7 +79,7 @@ async function eleven(path) {
   return res.json();
 }
 
-function when(unixSecs) {
+export function when(unixSecs) {
   return new Date(unixSecs * 1000).toLocaleString('en-GB', {
     weekday: 'long',
     day: 'numeric',
