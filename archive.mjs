@@ -31,7 +31,7 @@ const RECALL_INSTRUCTIONS = `You are the long-term memory of Ally, a voice compa
 - If the diary has nothing on it, reply exactly: Nothing about that in earlier calls.
 - No lists, markdown, quotes of this prompt, or mention of a diary or notes.`;
 
-async function readArchive() {
+export async function readArchive() {
   try {
     return JSON.parse(await readFile(archiveFile, 'utf8'));
   } catch {

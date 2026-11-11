@@ -98,6 +98,7 @@ Open http://localhost:5173, tap the orb, allow the microphone, and talk. Tap aga
 - A new call waits (up to 45 seconds) until the previous call has been remembered, so she never starts with stale notes. Normally this is instant.
 - If you close the tab mid-call, the call is picked up the next time you start one.
 - The file is capped at roughly 500 words. Edit or delete anything in it; she is told to respect your edits.
+- The **Memory** link under the orb opens a page (`/memory.html`, behind the passcode) where you can read and edit her notes and read the diary. On a hosted copy this is the way to edit her memory.
 - Older details fall out of that file, so every call also gets a longer diary entry in `archive.json`, kept for good. When you mention something she no longer has in her notes, she searches the diary with her `recall` tool. Calls from before the archive existed are added the first time the server starts.
 
 ## Languages and silence

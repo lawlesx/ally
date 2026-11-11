@@ -112,6 +112,19 @@
   #lock input { width: min(52vw, 220px); text-align: center; }
   #lock input:focus-visible, #lock button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
   #lock button { cursor: pointer; background: rgb(255 255 255 / 0.14); }
+  #memory-link {
+    position: fixed;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    left: 50%;
+    translate: -50% 0;
+    padding: 12px 16px;
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: none;
+    opacity: 0.7;
+  }
+  #memory-link:hover, #memory-link:focus-visible { opacity: 1; text-decoration: underline; }
+  body:not([data-state="idle"]) #memory-link { display: none; }
   body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   @media (prefers-reduced-motion: reduce) {
     #orb { animation: none !important; transform: none; }
@@ -131,6 +144,7 @@
       </form>
     </div>
   </main>
+  <a id="memory-link" href="/memory.html">Memory</a>
   <script type="module" src="/app.js"></script>
 </body>
 </html>

@@ -71,6 +71,13 @@ export async function readMemory() {
   }
 }
 
+// Saves a hand-edited memory file (from the memory page) and writes openers to match.
+export async function writeMemory(text) {
+  await mkdir(dataDir, { recursive: true });
+  await writeFile(memoryFile, text.trim() + '\n');
+  refreshGreetings();
+}
+
 async function eleven(path) {
   const res = await fetch(API + path, {
     headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY },

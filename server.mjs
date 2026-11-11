@@ -8,12 +8,14 @@ import {
   readAgentId,
   readMemory,
   refreshGreetings,
+  EMPTY_MEMORY,
   rememberCall,
   settled,
+  writeMemory,
   takeGreeting,
 } from './memory.mjs';
 import { lookUp } from './lookup.mjs';
-import { archiveMissing, recall } from './archive.mjs';
+import { archiveMissing, readArchive, recall } from './archive.mjs';
 
 const root = join(import.meta.dirname, 'public');
 const port = Number(process.env.PORT) || 5173;
@@ -117,6 +119,25 @@ createServer(async (req, res) => {
       const answer = await lookUp(question);
       console.log(`Looked up "${question}" in ${((Date.now() - started) / 1000).toFixed(1)}s`);
       return json(res, 200, { answer });
+    }
+    // The memory page (public/memory.html): read her notes and diary, save edits.
+    if (path === '/api/memory' && req.method === 'GET') {
+      const memory = await readMemory();
+      const diary = (await readArchive())
+        .filter((e) => e.note)
+        .reverse() // newest first
+        .map(({ when, minutes, note }) => ({ when, minutes, note }));
+      return json(res, 200, { memory: memory === EMPTY_MEMORY ? '' : memory, diary });
+    }
+    if (path === '/api/memory' && req.method === 'PUT') {
+      let body = '';
+      for await (const chunk of req) {
+        body += chunk;
+        if (body.length > 20_000) return json(res, 413, { error: 'Too long to save.' });
+      }
+      await writeMemory(body);
+      console.log('Memory edited by hand.');
+      return json(res, 200, { saved: true });
     }
     if (path === '/api/recall' && req.method === 'POST') {
       let body = '';

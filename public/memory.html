@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14110f">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<title>Ally's memory</title>
+<style>
+  :root {
+    --bg: #14110f;
+    --text: #efe6dc;
+    --muted: #9a8d80;
+    --line: rgb(255 255 255 / 0.14);
+    --field: rgb(255 255 255 / 0.05);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: calc(24px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
+  }
+  a { color: var(--muted); }
+  h1 { font-size: 22px; margin: 16px 0 4px; }
+  h2 { font-size: 17px; margin: 40px 0 4px; }
+  p.hint { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
+  textarea {
+    width: 100%;
+    min-height: 55vh;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--field);
+    color: var(--text);
+    font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    resize: vertical;
+  }
+  textarea:focus-visible, input:focus-visible, button:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+  .row { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  button, input {
+    font: inherit;
+    color: var(--text);
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.12);
+    padding: 10px 20px;
+    min-height: 44px;
+  }
+  button { cursor: pointer; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  input { background: var(--field); width: min(60vw, 240px); text-align: center; }
+  #status { color: var(--muted); font-size: 14px; }
+  #lock[hidden], #editor[hidden] { display: none; }
+  article { border-top: 1px solid var(--line); padding: 14px 0; }
+  article time { display: block; color: var(--muted); font-size: 13px; margin-bottom: 4px; }
+  article p { margin: 0; font-size: 15px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+  <main>
+    <a href="/">&larr; Back to Ally</a>
+    <h1>Ally's memory</h1>
+
+    <form id="lock" class="row" hidden>
+      <input id="passcode" type="password" aria-label="Passcode" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+      <button type="submit">Unlock</button>
+    </form>
+
+    <div id="editor" hidden>
+      <p class="hint">What she reads before every call. Change or delete anything; she goes by what is written here. Keep the headings.</p>
+      <textarea id="memory" aria-label="Ally's notes about you" spellcheck="false"></textarea>
+      <div class="row">
+        <button id="save" type="button">Save</button>
+        <span id="status" role="status" aria-live="polite"></span>
+      </div>
+
+      <h2>Diary of calls</h2>
+      <p class="hint">One entry per call, kept for good. She searches these when you bring up something older. Read-only.</p>
+      <div id="diary"></div>
+    </div>
+    <p id="message" class="hint" role="status" aria-live="polite"></p>
+  </main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let passcode = '';
+  try { passcode = localStorage.getItem('ally-passcode') || ''; } catch {}
+
+  const api = (options = {}) =>
+    fetch('/api/memory', {
+      ...options,
+      headers: { 'x-ally-passcode': encodeURIComponent(passcode) },
+    });
+
+  let saved = '';
+  const dirty = () => $('memory').value !== saved;
+
+  async function load() {
+    $('message').textContent = 'Loading…';
+    let res, data;
+    try {
+      res = await api();
+      data = await res.json();
+    } catch {
+      $('message').textContent = 'Could not reach Ally.';
+      return;
+    }
+    if (res.status === 401) {
+      $('message').textContent = passcode ? "That passcode didn't work." : 'Enter your passcode.';
+      $('lock').hidden = false;
+      $('passcode').focus();
+      return;
+    }
+    if (!res.ok) {
+      $('message').textContent = data.error || 'Something went wrong.';
+      return;
+    }
+    $('message').textContent = '';
+    $('lock').hidden = true;
+    $('editor').hidden = false;
+    saved = $('memory').value = data.memory;
+    $('status').textContent = data.memory ? '' : 'Nothing yet. She fills this in after your first call.';
+
+    const diary = $('diary');
+    diary.replaceChildren();
+    if (!data.diary.length) diary.textContent = 'No calls yet.';
+    for (const entry of data.diary) {
+      const article = document.createElement('article');
+      const time = document.createElement('time');
+      time.textContent = `${entry.when} · ${entry.minutes} min`;
+      const p = document.createElement('p');
+      p.textContent = entry.note;
+      article.append(time, p);
+      diary.append(article);
+    }
+  }
+
+  $('lock').addEventListener('submit', (e) => {
+    e.preventDefault();
+    passcode = $('passcode').value.trim();
+    if (!passcode) return;
+    try { localStorage.setItem('ally-passcode', passcode); } catch {}
+    load();
+  });
+
+  $('memory').addEventListener('input', () => {
+    $('status').textContent = dirty() ? 'Unsaved changes' : '';
+  });
+
+  $('save').addEventListener('click', async () => {
+    const text = $('memory').value;
+    $('save').disabled = true;
+    $('status').textContent = 'Saving…';
+    try {
+      const res = await api({ method: 'PUT', body: text });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not save.');
+      saved = text;
+      $('status').textContent = 'Saved. She uses it from the next call.';
+    } catch (err) {
+      $('status').textContent = err.message;
+    }
+    $('save').disabled = false;
+  });
+
+  window.addEventListener('beforeunload', (e) => {
+    if (dirty()) e.preventDefault();
+  });
+
+  load();
+</script>
+</body>
+</html>
