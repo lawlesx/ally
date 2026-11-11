@@ -96,7 +96,7 @@ Open http://localhost:5173, tap the orb, allow the microphone, and talk. Tap aga
 
 - When a call ends, the page tells the server. The server waits for ElevenLabs to finish the transcript, then Claude rewrites `memory.md`.
 - A new call waits (up to 45 seconds) until the previous call has been remembered, so she never starts with stale notes. Normally this is instant.
-- If you close the tab mid-call, the call is picked up the next time you start one.
+- If you close the tab mid-call, the call is picked up the next time you start one. The server also catches up on any missed calls when it starts.
 - The file is capped at roughly 500 words. Edit or delete anything in it; she is told to respect your edits.
 - The **Memory** link under the orb opens a page (`/memory.html`, behind the passcode) where you can read and edit her notes and read the diary. On a hosted copy this is the way to edit her memory.
 - Older details fall out of that file, so every call also gets a longer diary entry in `archive.json`, kept for good. When you mention something she no longer has in her notes, she searches the diary with her `recall` tool. Calls from before the archive existed are added the first time the server starts.
@@ -105,6 +105,7 @@ Open http://localhost:5173, tap the orb, allow the microphone, and talk. Tap aga
 
 - She speaks English by default and switches to Hinglish when you speak Hindi, then back when you do. The language rules are in the "Languages" section of [persona.md](persona.md); the switch itself is ElevenLabs' language detection, set up in [scripts/setup-agent.mjs](scripts/setup-agent.mjs).
 - If the line is silent for 12 seconds she brings something up herself. If you stay quiet she says she'll wait, and then does. Say "hold on" and she waits straight away.
+- Say goodbye and she says it back and hangs up herself.
 
 ## Using her from your phone
 

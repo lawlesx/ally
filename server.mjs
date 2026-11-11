@@ -11,6 +11,7 @@ import {
   EMPTY_MEMORY,
   rememberCall,
   settled,
+  sync,
   writeMemory,
   takeGreeting,
 } from './memory.mjs';
@@ -187,6 +188,8 @@ createServer(async (req, res) => {
   }
 }).listen(port, host, () => {
   console.log(`Ally is at http://localhost:${port}${passcode ? ' (passcode required)' : ''}`);
-  refreshGreetings(); // have openers ready before the first call
+  // Catch up on any calls not yet in her notes (all of them, on a fresh host),
+  // then have openers ready before the first call.
+  sync().then(refreshGreetings);
   archiveMissing(); // diary entries for any calls that don't have one yet
 });

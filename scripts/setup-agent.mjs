@@ -133,6 +133,13 @@ const body = {
             description: '',
             params: { system_tool_type: 'language_detection' },
           },
+          // Lets her hang up after a goodbye.
+          end_call: {
+            type: 'system',
+            name: 'end_call',
+            description: '',
+            params: { system_tool_type: 'end_call' },
+          },
           // Lets her stay quiet and wait instead of filling every silence.
           skip_turn: {
             type: 'system',
