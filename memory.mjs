@@ -189,8 +189,9 @@ async function run() {
 
 // ---- Greetings ----
 // Ally's opening line is written ahead of time (so a call starts instantly),
-// one per time of day. They use her notes only for the person's name and tone,
-// never for topics: the person decides what the call is about. A fresh set is written after
+// one per time of day. They use her notes for the person's name and tone, and
+// bring up an earlier call only when something important is pending; otherwise
+// the person decides what the call is about. A fresh set is written after
 // every call and every time one is used.
 
 const greetingsFile = join(stateDir, 'greetings.json');
@@ -204,7 +205,8 @@ Write four openers, one for each time of day the call might start: morning, afte
 Rules:
 - Spoken, casual, and short: under fourteen words each. This is a hello, not a speech.
 - Make the four different in shape from each other and from the recent ones. Mix these kinds: a plain warm hello; a hello using their name; a light remark that fits the time of day; an open "what's up?" kind of line.
-- Never refer to anything from earlier calls: no topics, plans, games, shows or questions about how something went. They may be calling about something else entirely, so the opener leaves the subject to them. The notes are only for their name and for the tone the two of them have.
+- By default, don't refer to earlier calls: no everyday topics like games, shows, films, or what they were up to. They may be calling about something else entirely, so the opener leaves the subject to them. The notes are mainly for their name and for the tone the two of them have.
+- The one exception is something that really matters to them and is recent or still unresolved: a big day (an interview, an exam, a launch, a trip), something they were worried or upset about, someone who was unwell, a result they were waiting on. A friend would ask about that first. If the notes hold something like that, one of the four openers, and only one, may ask about it in a few warm words. If nothing in the notes is that important, none of them do.
 - If the notes say this is the first time they've talked, write simple friendly hellos with no name.
 - Never "How can I help", "How are you today", or anything an assistant would say. No emoji, no stage directions, no bracketed tags.
 
