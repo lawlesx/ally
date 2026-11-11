@@ -189,7 +189,8 @@ async function run() {
 
 // ---- Greetings ----
 // Ally's opening line is written ahead of time (so a call starts instantly),
-// one per time of day, from what she remembers. A fresh set is written after
+// one per time of day. They use her notes only for the person's name and tone,
+// never for topics: the person decides what the call is about. A fresh set is written after
 // every call and every time one is used.
 
 const greetingsFile = join(stateDir, 'greetings.json');
@@ -202,9 +203,9 @@ Write four openers, one for each time of day the call might start: morning, afte
 
 Rules:
 - Spoken, casual, and short: under fourteen words each. This is a hello, not a speech.
-- Make the four different in shape from each other and from the recent ones. Mix these kinds: a plain warm hello; a hello using their name; a light remark that fits the time of day; a quick callback to one specific thing from the notes ("Hey! So, did you win one finally?").
-- At most two of the four may be callbacks, and each callback uses a different thing from the notes. Only refer to what the notes actually say.
-- If the notes say this is the first time they've talked, write simple friendly hellos with no name and no callbacks.
+- Make the four different in shape from each other and from the recent ones. Mix these kinds: a plain warm hello; a hello using their name; a light remark that fits the time of day; an open "what's up?" kind of line.
+- Never refer to anything from earlier calls: no topics, plans, games, shows or questions about how something went. They may be calling about something else entirely, so the opener leaves the subject to them. The notes are only for their name and for the tone the two of them have.
+- If the notes say this is the first time they've talked, write simple friendly hellos with no name.
 - Never "How can I help", "How are you today", or anything an assistant would say. No emoji, no stage directions, no bracketed tags.
 
 Output exactly four lines and nothing else, in this form:
