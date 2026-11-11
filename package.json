@@ -1,0 +1,15 @@
+{
+  "name": "ally",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/main.js --target=browser --outfile=public/app.js",
+    "start": "bun run build && bun server.mjs",
+    "setup": "bun scripts/setup-agent.mjs",
+    "voices": "bun scripts/list-voices.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@elevenlabs/client": "latest"
+  }
+}

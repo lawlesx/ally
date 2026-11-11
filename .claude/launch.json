@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ally",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "start"],
+      "port": 5173
+    }
+  ]
+}
